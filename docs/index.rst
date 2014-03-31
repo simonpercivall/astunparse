@@ -1,11 +1,11 @@
-Welcome to AST Unparser's documentation!
-========================================
+Welcome to the AST Unparser documentation!
+==========================================
+
+.. include:: ../README.rst
+    :start-line: 13
 
 Contents:
 =========
-
-.. include:: ../README.rst
-    :start-line: 16
 
 .. toctree::
    :maxdepth: 2

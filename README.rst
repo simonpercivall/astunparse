@@ -1,24 +1,62 @@
-===============================
+============
 AST Unparser
-===============================
+============
 
-.. This is an example of how the readme could be decorated with badges.
-    .. image:: https://badge.fury.io/py/astunparse.png
-        :target: http://badge.fury.io/py/astunparse
+.. image:: https://badge.fury.io/py/astunparse.png
+    :target: http://badge.fury.io/py/astunparse
 
-    .. image:: https://travis-ci.org/<your github username>/astunparse.png?branch=master
-        :target: https://travis-ci.org/<your github username>/astunparse
+.. image:: https://travis-ci.org/simonpercivall/astunparse.png?branch=master
+    :target: https://travis-ci.org/simonpercivall/astunparse
 
-    .. image:: https://pypip.in/d/astunparse/badge.png
-        :target: https://crate.io/packages/astunparse?version=latest
+.. image:: https://pypip.in/d/astunparse/badge.png
+    :target: https://crate.io/packages/astunparse?version=latest
+
+An AST unparser for Python.
+
+This is a factored out version of `unparse` found in the Python
+source distribution; under Demo/parser in Python 2 and under Tools/parser
+in Python 3.
+
+Basic example::
+
+    import inspect
+    import ast
+    import astunparse
+
+    astunparse.unparse(ast.parse(inspect.getsource(ast)))
 
 
-An AST unparser for Python
+This library is single-source compatible with Python 2.7 and Python 3.4. It is
+authored by the Python core developers; I have simply merged the Python 2.7 and
+the Python 3.4 source and test suites, and added a wrapper. This factoring out
+is to provide a library implementation that supports both versions.
 
-* Free software: BSD license
+The test suite both runs specific tests and also roundtrips much of the
+standard library.
+
+Similar projects include:
+
+    * codegen_
+    * astor_
+    * astmonkey_
+    * astprint_
+
+None of these roundtrip much of the standard library and fail several of the basic
+tests in the `test_unparse` test suite.
+
+This library uses mature and core maintained code instead of trying to patch
+existing libraries. The `unparse` and the `test_unparse` modules
+are under the PSF license.
+
 * Documentation: http://astunparse.rtfd.org.
 
 Features
 --------
 
-* TODO
+* unparses Python AST trees.
+
+
+.. _codegen: https://github.com/andreif/codegen
+.. _astor: https://github.com/berkerpeksag/astor
+.. _astmonkey: https://github.com/konradhalas/astmonkey
+.. _astprint: https://github.com/Manticore/astprint
