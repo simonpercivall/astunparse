@@ -5,7 +5,6 @@ if six.PY3:
     import test.support as test_support
 else:
     from test import test_support
-import io
 import sys
 import os
 if six.PY3:
@@ -13,7 +12,7 @@ if six.PY3:
 else:
     from lib2to3.pgen2 import tokenize
 import ast
-import astunparse.unparse
+import astunparse
 
 def read_pyfile(filename):
     """Read and return the contents of a Python source file (as a
@@ -131,9 +130,7 @@ class ASTTestCase(unittest.TestCase):
 
     def check_roundtrip(self, code1, filename="internal"):
         ast1 = compile(str(code1), filename, "exec", ast.PyCF_ONLY_AST)
-        unparse_buffer = io.StringIO()
-        astunparse.unparse.Unparser(ast1, unparse_buffer)
-        code2 = unparse_buffer.getvalue()
+        code2 = astunparse.unparse(ast1)
         ast2 = compile(code2, filename, "exec", ast.PyCF_ONLY_AST)
         self.assertASTEqual(ast1, ast2)
 
