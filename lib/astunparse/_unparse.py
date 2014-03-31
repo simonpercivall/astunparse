@@ -704,7 +704,7 @@ def roundtrip(filename, output=sys.stdout):
     else:
         with open(filename, "r") as pyfile:
             source = pyfile.read()
-    tree = compile(source, filename, "exec", ast.PyCF_ONLY_AST)
+    tree = compile(source, filename, "exec", ast.PyCF_ONLY_AST, dont_inherit=True)
     Unparser(tree, output)
 
 
