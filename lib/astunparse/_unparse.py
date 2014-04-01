@@ -641,13 +641,16 @@ class Unparser:
             else: self.write(", ")
             self.write("*")
             if t.vararg:
-                if six.PY3:
+                if hasattr(t.vararg, 'arg'):
                     self.write(t.vararg.arg)
                     if t.vararg.annotation:
                         self.write(": ")
                         self.dispatch(t.vararg.annotation)
                 else:
                     self.write(t.vararg)
+                    if getattr(t, 'varargannotation', None):
+                        self.write(": ")
+                        self.dispatch(t.varargannotation)
 
         # keyword-only arguments
         if getattr(t, "kwonlyargs", False):
@@ -663,13 +666,16 @@ class Unparser:
         if t.kwarg:
             if first:first = False
             else: self.write(", ")
-            if six.PY3:
+            if hasattr(t.kwarg, 'arg'):
                 self.write("**"+t.kwarg.arg)
                 if t.kwarg.annotation:
                     self.write(": ")
                     self.dispatch(t.kwarg.annotation)
             else:
                 self.write("**"+t.kwarg)
+                if getattr(t, 'kwargannotation', None):
+                    self.write(": ")
+                    self.dispatch(t.kwargannotation)
 
     def _keyword(self, t):
         self.write(t.arg)
