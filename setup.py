@@ -37,7 +37,7 @@ setup(
     zip_safe=False,
     keywords='astunparse',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Natural Language :: English',
@@ -46,6 +46,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
+        'Topic :: Software Development :: Code Generators',
     ],
     test_suite='tests',
 )

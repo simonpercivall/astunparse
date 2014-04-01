@@ -4,7 +4,7 @@ from six.moves import cStringIO
 from ._unparse import Unparser
 
 
-__version__ = '0.1.0'
+__version__ = '1.1.0'
 
 
 def unparse(tree):
