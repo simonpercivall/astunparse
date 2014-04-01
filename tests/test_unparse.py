@@ -124,6 +124,10 @@ with f() as x, g() as y:
     suite1
 """
 
+a_repr = """\
+`{}`
+"""
+
 class ASTTestCase(unittest.TestCase):
     def assertASTEqual(self, ast1, ast2):
         self.assertEqual(ast.dump(ast1), ast.dump(ast2))
@@ -233,6 +237,10 @@ class UnparseTestCase(ASTTestCase):
 
     def test_bytes(self):
         self.check_roundtrip("b'123'")
+
+    @unittest.skipUnless(six.PY2, "Only for Python 2")
+    def test_repr(self):
+        self.check_roundtrip(a_repr)
 
     @unittest.skipUnless(six.PY3, "Only for Python 3")
     def test_annotations(self):
