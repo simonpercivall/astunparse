@@ -310,8 +310,8 @@ class DirectoryTestCase(ASTTestCase):
             self.check_roundtrip(source)
 
 
-def test_main():
+def main():
     test_support.run_unittest(UnparseTestCase, DirectoryTestCase)
 
 if __name__ == '__main__':
-    test_main()
+    main()
