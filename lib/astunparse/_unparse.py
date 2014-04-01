@@ -390,18 +390,18 @@ class Unparser:
     def _Str(self, tree):
         if six.PY3:
             self.write(repr(tree.s))
-            return
-        # if from __future__ import unicode_literals is in effect,
-        # then we want to output string literals using a 'b' prefix
-        # and unicode literals with no prefix.
-        if "unicode_literals" not in self.future_imports:
-            self.write(repr(tree.s))
-        elif isinstance(tree.s, str):
-            self.write("b" + repr(tree.s))
-        elif isinstance(tree.s, unicode):
-            self.write(repr(tree.s).lstrip("u"))
         else:
-            assert False, "shouldn't get here"
+            # if from __future__ import unicode_literals is in effect,
+            # then we want to output string literals using a 'b' prefix
+            # and unicode literals with no prefix.
+            if "unicode_literals" not in self.future_imports:
+                self.write(repr(tree.s))
+            elif isinstance(tree.s, str):
+                self.write("b" + repr(tree.s))
+            elif isinstance(tree.s, unicode):
+                self.write(repr(tree.s).lstrip("u"))
+            else:
+                assert False, "shouldn't get here"
 
     def _Name(self, t):
         self.write(t.id)
@@ -415,17 +415,17 @@ class Unparser:
         self.write("`")
 
     def _Num(self, t):
-        if six.PY3:
-            self.write(repr(t.n).replace("inf", INFSTR))
-            return
         repr_n = repr(t.n)
-        # Parenthesize negative numbers, to avoid turning (-1)**2 into -1**2.
-        if repr_n.startswith("-"):
-            self.write("(")
-        # Substitute overflowing decimal literal for AST infinities.
-        self.write(repr_n.replace("inf", INFSTR))
-        if repr_n.startswith("-"):
-            self.write(")")
+        if six.PY3:
+            self.write(repr_n.replace("inf", INFSTR))
+        else:
+            # Parenthesize negative numbers, to avoid turning (-1)**2 into -1**2.
+            if repr_n.startswith("-"):
+                self.write("(")
+            # Substitute overflowing decimal literal for AST infinities.
+            self.write(repr_n.replace("inf", INFSTR))
+            if repr_n.startswith("-"):
+                self.write(")")
 
     def _List(self, t):
         self.write("[")
