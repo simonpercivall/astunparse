@@ -1,12 +1,8 @@
 import unittest
 import codecs
-import six
-if six.PY3:
-    import test.support as test_support
-else:
-    from test import test_support
 import sys
 import os
+import six
 if six.PY3:
     import tokenize
 else:
@@ -304,14 +300,6 @@ class DirectoryTestCase(ASTTestCase):
                     names.append(os.path.join(test_dir, n))
 
         for filename in names:
-            if test_support.verbose:
-                print('Testing %s' % filename)
+            print('Testing %s' % filename)
             source = read_pyfile(filename)
             self.check_roundtrip(source)
-
-
-def main():
-    test_support.run_unittest(UnparseTestCase, DirectoryTestCase)
-
-if __name__ == '__main__':
-    main()
