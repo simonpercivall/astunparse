@@ -372,7 +372,7 @@ class Unparser:
 
     def _With(self, t):
         self.fill("with ")
-        if six.PY3:
+        if hasattr(t, 'items'):
             interleave(lambda: self.write(", "), self.dispatch, t.items)
         else:
             self.dispatch(t.context_expr)
