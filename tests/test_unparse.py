@@ -1,6 +1,9 @@
-import unittest
 import codecs
 import sys
+if sys.version_info < (2, 7):
+    import unittest2 as unittest
+else:
+    import unittest
 import os
 import six
 if six.PY3:
@@ -246,12 +249,15 @@ class UnparseTestCase(ASTTestCase):
         self.check_roundtrip("def f(**kwargs: dict): pass")
         self.check_roundtrip("def f() -> None: pass")
 
+    @unittest.skipIf(sys.version_info < (2, 7), "Not supported < 2.7")
     def test_set_literal(self):
         self.check_roundtrip("{'a', 'b', 'c'}")
 
+    @unittest.skipIf(sys.version_info < (2, 7), "Not supported < 2.7")
     def test_set_comprehension(self):
         self.check_roundtrip("{x for x in range(5)}")
 
+    @unittest.skipIf(sys.version_info < (2, 7), "Not supported < 2.7")
     def test_dict_comprehension(self):
         self.check_roundtrip("{x: x*x for x in range(10)}")
 
@@ -282,6 +288,7 @@ class UnparseTestCase(ASTTestCase):
     def test_with_as(self):
         self.check_roundtrip(with_as)
 
+    @unittest.skipIf(sys.version_info < (2, 7), "Not supported < 2.7")
     def test_with_two_items(self):
         self.check_roundtrip(with_two_items)
 

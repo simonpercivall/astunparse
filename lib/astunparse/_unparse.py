@@ -422,6 +422,8 @@ class Unparser:
             # Parenthesize negative numbers, to avoid turning (-1)**2 into -1**2.
             if repr_n.startswith("-"):
                 self.write("(")
+            if "inf" in repr_n and repr_n.endswith("*j"):
+                repr_n = repr_n.replace("*j", "j")
             # Substitute overflowing decimal literal for AST infinities.
             self.write(repr_n.replace("inf", INFSTR))
             if repr_n.startswith("-"):
