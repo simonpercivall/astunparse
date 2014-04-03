@@ -23,13 +23,19 @@ Basic example::
     import ast
     import astunparse
 
+    # get back the source code
     astunparse.unparse(ast.parse(inspect.getsource(ast)))
 
+    # get a pretty-printed dump of the AST
+    astunparse.dump(ast.parse(inspect.getsource(ast)))
 
-This library is single-source compatible with Python 2.7 and Python 3.4. It is
-authored by the Python core developers; I have simply merged the Python 2.7 and
-the Python 3.4 source and test suites, and added a wrapper. This factoring out
-is to provide a library implementation that supports both versions.
+
+This library is single-source compatible with Python 2.6 through Python 3.4. It
+is authored by the Python core developers; I have simply merged the Python 2.7
+and the Python 3.4 source and test suites, and added a wrapper. This factoring
+out is to provide a library implementation that supports both versions.
+
+Added to this is a pretty-printing `dump` utility function.
 
 The test suite both runs specific tests and also roundtrips much of the
 standard library.
@@ -53,7 +59,8 @@ are under the PSF license.
 Features
 --------
 
-* unparses Python AST trees.
+* unparses Python AST.
+* pretty-prints AST.
 
 
 .. _codegen: https://github.com/andreif/codegen

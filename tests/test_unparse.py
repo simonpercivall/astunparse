@@ -294,10 +294,8 @@ class UnparseTestCase(ASTTestCase):
 
 class DirectoryTestCase(ASTTestCase):
     """Test roundtrip behaviour on all files in Lib and Lib/test."""
-
-    # test directories, relative to the root of the distribution
-    # test_directories = 'Lib', os.path.join('Lib', 'test')
-    test_directories = [os.path.join(getattr(sys, 'real_prefix', sys.prefix), 'lib', 'python%s.%s' % sys.version_info[:2])]
+    test_directories = [os.path.join(getattr(sys, 'real_prefix', sys.prefix),
+                                     'lib', 'python%s.%s' % sys.version_info[:2])]
 
     def test_files(self):
         names = []

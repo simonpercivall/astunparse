@@ -11,3 +11,4 @@ Authors
 -------
 
 * The Python Software Foundation
+* Bogdan Opanchuk
