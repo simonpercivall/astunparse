@@ -286,16 +286,17 @@ class Unparser:
                 if comma: self.write(", ")
                 else: comma = True
                 self.dispatch(e)
-            if t.starargs:
-                if comma: self.write(", ")
-                else: comma = True
-                self.write("*")
-                self.dispatch(t.starargs)
-            if t.kwargs:
-                if comma: self.write(", ")
-                else: comma = True
-                self.write("**")
-                self.dispatch(t.kwargs)
+            if sys.version_info[:2] < (3, 5):
+                if t.starargs:
+                    if comma: self.write(", ")
+                    else: comma = True
+                    self.write("*")
+                    self.dispatch(t.starargs)
+                if t.kwargs:
+                    if comma: self.write(", ")
+                    else: comma = True
+                    self.write("**")
+                    self.dispatch(t.kwargs)
             self.write(")")
         elif t.bases:
                 self.write("(")
@@ -575,16 +576,17 @@ class Unparser:
             if comma: self.write(", ")
             else: comma = True
             self.dispatch(e)
-        if t.starargs:
-            if comma: self.write(", ")
-            else: comma = True
-            self.write("*")
-            self.dispatch(t.starargs)
-        if t.kwargs:
-            if comma: self.write(", ")
-            else: comma = True
-            self.write("**")
-            self.dispatch(t.kwargs)
+        if sys.version_info[:2] < (3, 5):
+            if t.starargs:
+                if comma: self.write(", ")
+                else: comma = True
+                self.write("*")
+                self.dispatch(t.starargs)
+            if t.kwargs:
+                if comma: self.write(", ")
+                else: comma = True
+                self.write("**")
+                self.dispatch(t.kwargs)
         self.write(")")
 
     def _Subscript(self, t):
@@ -680,8 +682,12 @@ class Unparser:
                     self.dispatch(t.kwargannotation)
 
     def _keyword(self, t):
-        self.write(t.arg)
-        self.write("=")
+        if t.arg is None:
+            # starting from Python 3.5 this denotes a kwargs part of the invocation
+            self.write("**")
+        else:
+            self.write(t.arg)
+            self.write("=")
         self.dispatch(t.value)
 
     def _Lambda(self, t):
