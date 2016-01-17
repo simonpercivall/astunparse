@@ -308,12 +308,12 @@ class Unparser:
         self.dispatch(t.body)
         self.leave()
 
-    def _FunctionDef(self, t):
+    def _generic_FunctionDef(self, t, async=False):
         self.write("\n")
         for deco in t.decorator_list:
             self.fill("@")
             self.dispatch(deco)
-        self.fill("def "+t.name + "(")
+        self.fill(("async " if async else "") + "def " + t.name + "(")
         self.dispatch(t.args)
         self.write(")")
         if getattr(t, "returns", False):
@@ -322,6 +322,12 @@ class Unparser:
         self.enter()
         self.dispatch(t.body)
         self.leave()
+
+    def _FunctionDef(self, t):
+        self._generic_FunctionDef(t)
+
+    def _AsyncFunctionDef(self, t):
+        self._generic_FunctionDef(t, async=True)
 
     def _For(self, t):
         self.fill("for ")
