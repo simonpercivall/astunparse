@@ -8,8 +8,8 @@ AST Unparser
 .. image:: https://travis-ci.org/simonpercivall/astunparse.png?branch=master
     :target: https://travis-ci.org/simonpercivall/astunparse
 
-.. image:: https://pypip.in/d/astunparse/badge.png
-    :target: https://crate.io/packages/astunparse?version=latest
+.. image:: https://readthedocs.org/projects/astunparse/badge/
+    :target: https://astunparse.readthedocs.org/
 
 An AST unparser for Python.
 
