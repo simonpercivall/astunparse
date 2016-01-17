@@ -13,7 +13,7 @@ AST Unparser
 
 An AST unparser for Python.
 
-This is a factored out version of `unparse` found in the Python
+This is a factored out version of ``unparse`` found in the Python
 source distribution; under Demo/parser in Python 2 and under Tools/parser
 in Python 3.
 
@@ -32,10 +32,10 @@ Basic example::
 
 This library is single-source compatible with Python 2.6 through Python 3.5. It
 is authored by the Python core developers; I have simply merged the Python 2.7
-and the Python 3.4 source and test suites, and added a wrapper. This factoring
+and the Python 3.5 source and test suites, and added a wrapper. This factoring
 out is to provide a library implementation that supports both versions.
 
-Added to this is a pretty-printing `dump` utility function.
+Added to this is a pretty-printing ``dump`` utility function.
 
 The test suite both runs specific tests and also roundtrips much of the
 standard library.
@@ -48,10 +48,10 @@ Similar projects include:
     * astprint_
 
 None of these roundtrip much of the standard library and fail several of the basic
-tests in the `test_unparse` test suite.
+tests in the ``test_unparse`` test suite.
 
 This library uses mature and core maintained code instead of trying to patch
-existing libraries. The `unparse` and the `test_unparse` modules
+existing libraries. The ``unparse`` and the ``test_unparse`` modules
 are under the PSF license.
 
 * Documentation: http://astunparse.rtfd.org.
