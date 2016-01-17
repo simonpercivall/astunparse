@@ -1,5 +1,4 @@
 pygments
 sphinx
 sphinx_rtd_theme
-changelog
 -r../requirements.txt

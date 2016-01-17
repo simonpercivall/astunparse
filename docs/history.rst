@@ -5,4 +5,4 @@ History
 =======
 
 .. include:: ../HISTORY.rst
-    :start-line: 5
+    :start-line: 3
