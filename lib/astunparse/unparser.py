@@ -535,7 +535,8 @@ class Unparser:
 
     binop = { "Add":"+", "Sub":"-", "Mult":"*", "Div":"/", "Mod":"%",
                     "LShift":"<<", "RShift":">>", "BitOr":"|", "BitXor":"^", "BitAnd":"&",
-                    "FloorDiv":"//", "Pow": "**"}
+                    "FloorDiv":"//", "Pow": "**",
+                    "MatMult":"@"}
     def _BinOp(self, t):
         self.write("(")
         self.dispatch(t.left)
