@@ -286,16 +286,17 @@ class Unparser:
                 if comma: self.write(", ")
                 else: comma = True
                 self.dispatch(e)
-            if t.starargs:
-                if comma: self.write(", ")
-                else: comma = True
-                self.write("*")
-                self.dispatch(t.starargs)
-            if t.kwargs:
-                if comma: self.write(", ")
-                else: comma = True
-                self.write("**")
-                self.dispatch(t.kwargs)
+            if sys.version_info[:2] < (3, 5):
+                if t.starargs:
+                    if comma: self.write(", ")
+                    else: comma = True
+                    self.write("*")
+                    self.dispatch(t.starargs)
+                if t.kwargs:
+                    if comma: self.write(", ")
+                    else: comma = True
+                    self.write("**")
+                    self.dispatch(t.kwargs)
             self.write(")")
         elif t.bases:
                 self.write("(")
@@ -307,12 +308,12 @@ class Unparser:
         self.dispatch(t.body)
         self.leave()
 
-    def _FunctionDef(self, t):
+    def _generic_FunctionDef(self, t, async=False):
         self.write("\n")
         for deco in t.decorator_list:
             self.fill("@")
             self.dispatch(deco)
-        self.fill("def "+t.name + "(")
+        self.fill(("async " if async else "") + "def " + t.name + "(")
         self.dispatch(t.args)
         self.write(")")
         if getattr(t, "returns", False):
@@ -321,6 +322,12 @@ class Unparser:
         self.enter()
         self.dispatch(t.body)
         self.leave()
+
+    def _FunctionDef(self, t):
+        self._generic_FunctionDef(t)
+
+    def _AsyncFunctionDef(self, t):
+        self._generic_FunctionDef(t, async=True)
 
     def _For(self, t):
         self.fill("for ")
@@ -528,7 +535,8 @@ class Unparser:
 
     binop = { "Add":"+", "Sub":"-", "Mult":"*", "Div":"/", "Mod":"%",
                     "LShift":"<<", "RShift":">>", "BitOr":"|", "BitXor":"^", "BitAnd":"&",
-                    "FloorDiv":"//", "Pow": "**"}
+                    "FloorDiv":"//", "Pow": "**",
+                    "MatMult":"@"}
     def _BinOp(self, t):
         self.write("(")
         self.dispatch(t.left)
@@ -575,16 +583,17 @@ class Unparser:
             if comma: self.write(", ")
             else: comma = True
             self.dispatch(e)
-        if t.starargs:
-            if comma: self.write(", ")
-            else: comma = True
-            self.write("*")
-            self.dispatch(t.starargs)
-        if t.kwargs:
-            if comma: self.write(", ")
-            else: comma = True
-            self.write("**")
-            self.dispatch(t.kwargs)
+        if sys.version_info[:2] < (3, 5):
+            if t.starargs:
+                if comma: self.write(", ")
+                else: comma = True
+                self.write("*")
+                self.dispatch(t.starargs)
+            if t.kwargs:
+                if comma: self.write(", ")
+                else: comma = True
+                self.write("**")
+                self.dispatch(t.kwargs)
         self.write(")")
 
     def _Subscript(self, t):
@@ -680,8 +689,12 @@ class Unparser:
                     self.dispatch(t.kwargannotation)
 
     def _keyword(self, t):
-        self.write(t.arg)
-        self.write("=")
+        if t.arg is None:
+            # starting from Python 3.5 this denotes a kwargs part of the invocation
+            self.write("**")
+        else:
+            self.write(t.arg)
+            self.write("=")
         self.dispatch(t.value)
 
     def _Lambda(self, t):
@@ -702,6 +715,14 @@ class Unparser:
         if t.optional_vars:
             self.write(" as ")
             self.dispatch(t.optional_vars)
+
+    def _Await(self, t):
+        self.write("(")
+        self.write("await")
+        if t.value:
+            self.write(" ")
+            self.dispatch(t.value)
+        self.write(")")
 
 def roundtrip(filename, output=sys.stdout):
     if six.PY3:
