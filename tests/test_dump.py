@@ -14,8 +14,8 @@ class DumpTestCase(UnparseTestCase):
 
         self.assertEqual(dump1, dump2)
 
-    def check_roundtrip(self, code1, filename="internal"):
-        ast_ = compile(str(code1), filename, "exec", ast.PyCF_ONLY_AST)
+    def check_roundtrip(self, code1, filename="internal", mode="exec"):
+        ast_ = compile(str(code1), filename, mode, ast.PyCF_ONLY_AST)
         dump1 = astunparse.dump(ast_)
         dump2 = ast.dump(ast_)
         self.assertASTEqual(dump1, dump2)

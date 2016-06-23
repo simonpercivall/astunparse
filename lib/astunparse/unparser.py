@@ -77,6 +77,13 @@ class Unparser:
         for stmt in tree.body:
             self.dispatch(stmt)
 
+    def _Interactive(self, tree):
+        for stmt in tree.body:
+            self.dispatch(stmt)
+
+    def _Expression(self, tree):
+        self.dispatch(tree.body)
+
     # stmt
     def _Expr(self, tree):
         self.fill()
@@ -329,8 +336,8 @@ class Unparser:
     def _AsyncFunctionDef(self, t):
         self._generic_FunctionDef(t, async=True)
 
-    def _For(self, t):
-        self.fill("for ")
+    def _generic_For(self, t, async=False):
+        self.fill("async for " if async else "for ")
         self.dispatch(t.target)
         self.write(" in ")
         self.dispatch(t.iter)
@@ -342,6 +349,12 @@ class Unparser:
             self.enter()
             self.dispatch(t.orelse)
             self.leave()
+
+    def _For(self, t):
+        self._generic_For(t)
+
+    def _AsyncFor(self, t):
+        self._generic_For(t, async=True)
 
     def _If(self, t):
         self.fill("if ")
@@ -377,8 +390,8 @@ class Unparser:
             self.dispatch(t.orelse)
             self.leave()
 
-    def _With(self, t):
-        self.fill("with ")
+    def _generic_With(self, t, async=False):
+        self.fill("async with " if async else "with ")
         if hasattr(t, 'items'):
             interleave(lambda: self.write(", "), self.dispatch, t.items)
         else:
@@ -389,6 +402,12 @@ class Unparser:
         self.enter()
         self.dispatch(t.body)
         self.leave()
+
+    def _With(self, t):
+        self._generic_With(t)
+
+    def _AsyncWith(self, t):
+        self._generic_With(t, async=True)
 
     # expr
     def _Bytes(self, t):

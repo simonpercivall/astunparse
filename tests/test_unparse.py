@@ -26,6 +26,10 @@ def read_pyfile(filename):
             source = pyfile.read()
     return source
 
+code_parseable_in_all_parser_modes = """\
+(a + b + c) * (d + e + f)
+"""
+
 for_else = """\
 def f():
     for x in range(10):
@@ -127,18 +131,45 @@ a_repr = """\
 `{}`
 """
 
+async_function_def = """\
+async def f():
+    suite1
+"""
+
+async_for = """\
+async def f():
+    async for _ in reader:
+        suite1
+"""
+
+async_with = """\
+async def f():
+    async with g():
+        suite1
+"""
+
+async_with_as = """\
+async def f():
+    async with g() as x:
+        suite1
+"""
+
 class ASTTestCase(unittest.TestCase):
     def assertASTEqual(self, ast1, ast2):
         self.assertEqual(ast.dump(ast1), ast.dump(ast2))
 
-    def check_roundtrip(self, code1, filename="internal"):
-        ast1 = compile(str(code1), filename, "exec", ast.PyCF_ONLY_AST)
+    def check_roundtrip(self, code1, filename="internal", mode="exec"):
+        ast1 = compile(str(code1), filename, mode, ast.PyCF_ONLY_AST)
         code2 = astunparse.unparse(ast1)
-        ast2 = compile(code2, filename, "exec", ast.PyCF_ONLY_AST)
+        ast2 = compile(code2, filename, mode, ast.PyCF_ONLY_AST)
         self.assertASTEqual(ast1, ast2)
 
 class UnparseTestCase(ASTTestCase):
     # Tests for specific bugs found in earlier versions of unparse
+
+    def test_parser_modes(self):
+        for mode in ['exec', 'single', 'eval']:
+            self.check_roundtrip(code_parseable_in_all_parser_modes, mode=mode)
 
     def test_del_statement(self):
         self.check_roundtrip("del x, y, z")
@@ -291,6 +322,22 @@ class UnparseTestCase(ASTTestCase):
     @unittest.skipIf(sys.version_info < (2, 7), "Not supported < 2.7")
     def test_with_two_items(self):
         self.check_roundtrip(with_two_items)
+
+    @unittest.skipIf(sys.version_info < (3, 5), "Not supported < 3.5")
+    def test_async_function_def(self):
+        self.check_roundtrip(async_function_def)
+
+    @unittest.skipIf(sys.version_info < (3, 5), "Not supported < 3.5")
+    def test_async_for(self):
+        self.check_roundtrip(async_for)
+
+    @unittest.skipIf(sys.version_info < (3, 5), "Not supported < 3.5")
+    def test_async_with(self):
+        self.check_roundtrip(async_with)
+
+    @unittest.skipIf(sys.version_info < (3, 5), "Not supported < 3.5")
+    def test_async_with_as(self):
+        self.check_roundtrip(async_with_as)
 
 class DirectoryTestCase(ASTTestCase):
     """Test roundtrip behaviour on all files in Lib and Lib/test."""
