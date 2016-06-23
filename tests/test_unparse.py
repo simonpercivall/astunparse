@@ -127,6 +127,29 @@ a_repr = """\
 `{}`
 """
 
+async_function_def = """\
+async def f():
+    suite1
+"""
+
+async_for = """\
+async def f():
+    async for _ in reader:
+        suite1
+"""
+
+async_with = """\
+async def f():
+    async with g():
+        suite1
+"""
+
+async_with_as = """\
+async def f():
+    async with g() as x:
+        suite1
+"""
+
 class ASTTestCase(unittest.TestCase):
     def assertASTEqual(self, ast1, ast2):
         self.assertEqual(ast.dump(ast1), ast.dump(ast2))
@@ -291,6 +314,22 @@ class UnparseTestCase(ASTTestCase):
     @unittest.skipIf(sys.version_info < (2, 7), "Not supported < 2.7")
     def test_with_two_items(self):
         self.check_roundtrip(with_two_items)
+
+    @unittest.skipIf(sys.version_info < (3, 5), "Not supported < 3.5")
+    def test_async_function_def(self):
+        self.check_roundtrip(async_function_def)
+
+    @unittest.skipIf(sys.version_info < (3, 5), "Not supported < 3.5")
+    def test_async_for(self):
+        self.check_roundtrip(async_for)
+
+    @unittest.skipIf(sys.version_info < (3, 5), "Not supported < 3.5")
+    def test_async_with(self):
+        self.check_roundtrip(async_with)
+
+    @unittest.skipIf(sys.version_info < (3, 5), "Not supported < 3.5")
+    def test_async_with_as(self):
+        self.check_roundtrip(async_with_as)
 
 class DirectoryTestCase(ASTTestCase):
     """Test roundtrip behaviour on all files in Lib and Lib/test."""
