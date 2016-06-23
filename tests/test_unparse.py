@@ -26,6 +26,10 @@ def read_pyfile(filename):
             source = pyfile.read()
     return source
 
+code_parseable_in_all_parser_modes = """\
+(a + b + c) * (d + e + f)
+"""
+
 for_else = """\
 def f():
     for x in range(10):
@@ -154,14 +158,18 @@ class ASTTestCase(unittest.TestCase):
     def assertASTEqual(self, ast1, ast2):
         self.assertEqual(ast.dump(ast1), ast.dump(ast2))
 
-    def check_roundtrip(self, code1, filename="internal"):
-        ast1 = compile(str(code1), filename, "exec", ast.PyCF_ONLY_AST)
+    def check_roundtrip(self, code1, filename="internal", mode="exec"):
+        ast1 = compile(str(code1), filename, mode, ast.PyCF_ONLY_AST)
         code2 = astunparse.unparse(ast1)
-        ast2 = compile(code2, filename, "exec", ast.PyCF_ONLY_AST)
+        ast2 = compile(code2, filename, mode, ast.PyCF_ONLY_AST)
         self.assertASTEqual(ast1, ast2)
 
 class UnparseTestCase(ASTTestCase):
     # Tests for specific bugs found in earlier versions of unparse
+
+    def test_parser_modes(self):
+        for mode in ['exec', 'single', 'eval']:
+            self.check_roundtrip(code_parseable_in_all_parser_modes, mode=mode)
 
     def test_del_statement(self):
         self.check_roundtrip("del x, y, z")

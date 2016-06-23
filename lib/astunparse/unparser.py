@@ -77,6 +77,13 @@ class Unparser:
         for stmt in tree.body:
             self.dispatch(stmt)
 
+    def _Interactive(self, tree):
+        for stmt in tree.body:
+            self.dispatch(stmt)
+
+    def _Expression(self, tree):
+        self.dispatch(tree.body)
+
     # stmt
     def _Expr(self, tree):
         self.fill()
