@@ -3,6 +3,12 @@ Changelog
 
 Here's the recent changes to AST Unparser.
 
+1.4.0 - 2016-06-24
+~~~~~~~~~~~~~~~~~~
+
+* Support for the ``async`` keyword
+* Support for unparsing "Interactive" and "Expression" nodes
+
 1.3.0 - 2016-01-17
 ~~~~~~~~~~~~~~~~~~
 
