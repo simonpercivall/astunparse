@@ -40,6 +40,9 @@ Added to this is a pretty-printing ``dump`` utility function.
 The test suite both runs specific tests and also roundtrips much of the
 standard library.
 
+Extensions and Alternatives
+---------------------------
+
 Similar projects include:
 
     * codegen_
@@ -53,6 +56,10 @@ tests in the ``test_unparse`` test suite.
 This library uses mature and core maintained code instead of trying to patch
 existing libraries. The ``unparse`` and the ``test_unparse`` modules
 are under the PSF license.
+
+Extensions include:
+
+    * typed-astunparse: extends astunparse to support type annotations.
 
 * Documentation: http://astunparse.rtfd.org.
 
