@@ -35,7 +35,7 @@ def main(args):
     )
     parser.add_argument(
         '--dump',
-        type='bool',
+        type=bool,
         help="Show a pretty-printed AST instead of the source"
     )
 
