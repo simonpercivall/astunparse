@@ -76,6 +76,15 @@ except ZeroDivisionError as e:
     raise ArithmeticError from e
 """
 
+async_comprehensions_and_generators = """\
+async def async_function():
+    my_set = {i async for i in aiter() if i % 2}
+    my_list = [i async for i in aiter() if i % 2]
+    my_dict = {i: -i async for i in aiter() if i % 2}
+    my_gen = (i ** 2 async for i in agen())
+    my_other_gen = (i - 1 async for i in agen() if i % 2)
+"""
+
 class_decorator = """\
 @f1(arg)
 @f2
@@ -279,6 +288,21 @@ class AstunparseCommonTestCase:
     def test_bytes(self):
         self.check_roundtrip("b'123'")
 
+    @unittest.skipIf(sys.version_info < (3, 6), "Not supported < 3.6")
+    def test_joined_str(self):
+        self.check_roundtrip('f"{key}={value!s}"')
+        self.check_roundtrip('f"{key}={value!r}"')
+        self.check_roundtrip('f"{key}={value!a}"')
+        self.check_roundtrip('f"{key:4}={value!s}"')
+        self.check_roundtrip('f"{key:02}={value!r}"')
+        self.check_roundtrip('f"{key:6}={value!a}"')
+        self.check_roundtrip('f"{key:4}={value:#06x}"')
+        self.check_roundtrip('f"{key:02}={value:#06x}"')
+        self.check_roundtrip('f"{key:6}={value:#06x}"')
+        self.check_roundtrip('f"{key:4}={value!s:#06x}"')
+        self.check_roundtrip('f"{key:4}={value!r:#06x}"')
+        self.check_roundtrip('f"{key:4}={value!a:#06x}"')
+
     @unittest.skipUnless(six.PY2, "Only for Python 2")
     def test_repr(self):
         self.check_roundtrip(a_repr)
@@ -303,6 +327,21 @@ class AstunparseCommonTestCase:
     def test_dict_comprehension(self):
         self.check_roundtrip("{x: x*x for x in range(10)}")
 
+    @unittest.skipIf(sys.version_info < (3, 6), "Not supported < 3.6")
+    def test_async_comp_and_gen_in_async_function(self):
+        self.check_roundtrip(async_comprehensions_and_generators)
+
+    @unittest.skipIf(sys.version_info < (3, 7), "Not supported < 3.7")
+    def test_async_comprehension(self):
+        self.check_roundtrip("{i async for i in aiter() if i % 2}")
+        self.check_roundtrip("[i async for i in aiter() if i % 2]")
+        self.check_roundtrip("{i: -i async for i in aiter() if i % 2}")
+
+    @unittest.skipIf(sys.version_info < (3, 7), "Not supported < 3.7")
+    def test_async_generator_expression(self):
+        self.check_roundtrip("(i ** 2 async for i in agen())")
+        self.check_roundtrip("(i - 1 async for i in agen() if i % 2)")
+
     def test_class_decorators(self):
         self.check_roundtrip(class_decorator)
 
@@ -323,6 +362,18 @@ class AstunparseCommonTestCase:
         self.check_roundtrip("a, (*b, c) = seq")
         self.check_roundtrip("a, *b[0], c = seq")
         self.check_roundtrip("a, *(b, c) = seq")
+
+    @unittest.skipIf(sys.version_info < (3, 6), "Not supported < 3.6")
+    def test_variable_annotation(self):
+        self.check_roundtrip("a: int")
+        self.check_roundtrip("a: int = 0")
+        self.check_roundtrip("a: int = None")
+        self.check_roundtrip("some_list: List[int]")
+        self.check_roundtrip("some_list: List[int] = []")
+        self.check_roundtrip("t: Tuple[int, ...] = (1, 2, 3)")
+        self.check_roundtrip("(a): int")
+        self.check_roundtrip("(a): int = 0")
+        self.check_roundtrip("(a): int = None")
 
     def test_with_simple(self):
         self.check_roundtrip(with_simple)
