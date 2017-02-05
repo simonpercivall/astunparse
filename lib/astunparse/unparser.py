@@ -118,6 +118,19 @@ class Unparser:
         self.write(" "+self.binop[t.op.__class__.__name__]+"= ")
         self.dispatch(t.value)
 
+    def _AnnAssign(self, t):
+        self.fill()
+        if not t.simple:
+            self.write("(")
+        self.dispatch(t.target)
+        if not t.simple:
+            self.write(")")
+        self.write(": ")
+        self.dispatch(t.annotation)
+        if t.value:
+            self.write(" = ")
+            self.dispatch(t.value)
+
     def _Return(self, t):
         self.fill("return")
         if t.value:
@@ -429,6 +442,34 @@ class Unparser:
             else:
                 assert False, "shouldn't get here"
 
+    format_conversions = {97: 'a', 114: 'r', 115: 's'}
+
+    def _FormattedValue(self, t):
+        # FormattedValue(expr value, int? conversion, expr? format_spec)
+        self.write("{")
+        self.dispatch(t.value)
+        if t.conversion is not None and t.conversion != -1:
+            self.write("!")
+            self.write(self.format_conversions[t.conversion])
+            #raise NotImplementedError(ast.dump(t, True, True))
+        if t.format_spec is not None:
+            self.write(":")
+            if isinstance(t.format_spec, ast.Str):
+                self.write(t.format_spec.s)
+            else:
+                self.dispatch(t.format_spec)
+        self.write("}")
+
+    def _JoinedStr(self, t):
+        # JoinedStr(expr* values)
+        self.write("f'''")
+        for value in t.values:
+            if isinstance(value, ast.Str):
+                self.write(value.s)
+            else:
+                self.dispatch(value)
+        self.write("'''")
+
     def _Name(self, t):
         self.write(t.id)
 
@@ -491,6 +532,8 @@ class Unparser:
         self.write("}")
 
     def _comprehension(self, t):
+        if getattr(t, 'is_async', False):
+            self.write(" async")
         self.write(" for ")
         self.dispatch(t.target)
         self.write(" in ")
