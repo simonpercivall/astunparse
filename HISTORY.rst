@@ -3,7 +3,7 @@ Changelog
 
 Here's the recent changes to AST Unparser.
 
-1.4.1 - 2017-01-20
+x.x.x - (in devel)
 ~~~~~~~~~~~~~~~~~~
 
 * Python 3.6 support
