@@ -328,12 +328,12 @@ class Unparser:
         self.dispatch(t.body)
         self.leave()
 
-    def _generic_FunctionDef(self, t, async=False):
+    def _generic_FunctionDef(self, t, async_=False):
         self.write("\n")
         for deco in t.decorator_list:
             self.fill("@")
             self.dispatch(deco)
-        self.fill(("async " if async else "") + "def " + t.name + "(")
+        self.fill(("async " if async_ else "") + "def " + t.name + "(")
         self.dispatch(t.args)
         self.write(")")
         if getattr(t, "returns", False):
@@ -347,10 +347,10 @@ class Unparser:
         self._generic_FunctionDef(t)
 
     def _AsyncFunctionDef(self, t):
-        self._generic_FunctionDef(t, async=True)
+        self._generic_FunctionDef(t, async_=True)
 
-    def _generic_For(self, t, async=False):
-        self.fill("async for " if async else "for ")
+    def _generic_For(self, t, async_=False):
+        self.fill("async for " if async_ else "for ")
         self.dispatch(t.target)
         self.write(" in ")
         self.dispatch(t.iter)
@@ -367,7 +367,7 @@ class Unparser:
         self._generic_For(t)
 
     def _AsyncFor(self, t):
-        self._generic_For(t, async=True)
+        self._generic_For(t, async_=True)
 
     def _If(self, t):
         self.fill("if ")
@@ -403,8 +403,8 @@ class Unparser:
             self.dispatch(t.orelse)
             self.leave()
 
-    def _generic_With(self, t, async=False):
-        self.fill("async with " if async else "with ")
+    def _generic_With(self, t, async_=False):
+        self.fill("async with " if async_ else "with ")
         if hasattr(t, 'items'):
             interleave(lambda: self.write(", "), self.dispatch, t.items)
         else:
@@ -420,7 +420,7 @@ class Unparser:
         self._generic_With(t)
 
     def _AsyncWith(self, t):
-        self._generic_With(t, async=True)
+        self._generic_With(t, async_=True)
 
     # expr
     def _Bytes(self, t):
