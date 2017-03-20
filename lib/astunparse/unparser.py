@@ -564,8 +564,12 @@ class Unparser:
             self.dispatch(k)
             self.write(": ")
             self.dispatch(v)
-        interleave(lambda: self.write(", "), write_pair, zip(t.keys, t.values))
-        self.write("}")
+            self.write(",")
+        self._indent +=1
+        self.fill("")
+        interleave(lambda: self.fill(""), write_pair, zip(t.keys, t.values))
+        self._indent -=1
+        self.fill("}")
 
     def _Tuple(self, t):
         self.write("(")
