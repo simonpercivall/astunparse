@@ -42,7 +42,7 @@ articles, and such.
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issueat https://github.com/simonpercivall/astunparse/issues.
+The best way to send feedback is to file an issue at https://github.com/simonpercivall/astunparse/issues.
 
 If you are proposing a feature:
 
