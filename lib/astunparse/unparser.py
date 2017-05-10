@@ -444,9 +444,8 @@ class Unparser:
 
     format_conversions = {97: 'a', 114: 'r', 115: 's'}
 
-    def _FormattedValue(self, t):
-        # FormattedValue(expr value, int? conversion, expr? format_spec)
-        self.write("f'''{")
+    def _generic_FormattedValue(self, t):
+        self.write("{")
         self.dispatch(t.value)
         if t.conversion is not None and t.conversion != -1:
             self.write("!")
@@ -458,14 +457,25 @@ class Unparser:
                 self.write(t.format_spec.s)
             else:
                 self.dispatch(t.format_spec)
-        self.write("}'''")
+        self.write("}")
+
+    def _FormattedValue(self, t):
+        # FormattedValue(expr value, int? conversion, expr? format_spec)
+        self.write("f'''")
+        self._generic_FormattedValue(t)
+        self.write("'''")
 
     def _JoinedStr(self, t):
         # JoinedStr(expr* values)
-        self.write("(")
+        self.write("f'''")
         for value in t.values:
-            self.dispatch(value)
-        self.write(")")
+            if isinstance(value, ast.Str):
+                self.write(value.s)
+            elif isinstance(value, ast.FormattedValue):
+                self._generic_FormattedValue(value)
+            else:
+                self.dispatch(value)
+        self.write("'''")
 
     def _Name(self, t):
         self.write(t.id)
