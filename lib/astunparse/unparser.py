@@ -561,9 +561,13 @@ class Unparser:
         self.write("{")
         def write_pair(pair):
             (k, v) = pair
-            self.dispatch(k)
-            self.write(": ")
-            self.dispatch(v)
+            if k is None:
+                self.write('**')
+                self.dispatch(v)
+            else:
+                self.dispatch(k)
+                self.write(": ")
+                self.dispatch(v)
             self.write(",")
         self._indent +=1
         self.fill("")

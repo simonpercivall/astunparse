@@ -328,6 +328,11 @@ class AstunparseCommonTestCase:
         self.check_roundtrip("{x: x*x for x in range(10)}")
 
     @unittest.skipIf(sys.version_info < (3, 6), "Not supported < 3.6")
+    def test_dict_with_unpacking(self):
+        self.check_roundtrip("{**x}")
+        self.check_roundtrip("{a: b, **x}")
+
+    @unittest.skipIf(sys.version_info < (3, 6), "Not supported < 3.6")
     def test_async_comp_and_gen_in_async_function(self):
         self.check_roundtrip(async_comprehensions_and_generators)
 
