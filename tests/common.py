@@ -288,8 +288,12 @@ class AstunparseCommonTestCase:
     def test_bytes(self):
         self.check_roundtrip("b'123'")
 
+    @unittest.skipIf(sys.version_info < (3, 6), "Not supported < 3.6")
     def test_formatted_value(self):
-        self.check_roundtrip('f"{key}"')
+        self.check_roundtrip('f"{value}"')
+        self.check_roundtrip('f"{value!s}"')
+        self.check_roundtrip('f"{value:4}"')
+        self.check_roundtrip('f"{value!s:4}"')
 
     @unittest.skipIf(sys.version_info < (3, 6), "Not supported < 3.6")
     def test_joined_str(self):
