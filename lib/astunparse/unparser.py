@@ -454,7 +454,15 @@ class Unparser:
         if t.format_spec is not None:
             self.write(":")
             if isinstance(t.format_spec, ast.Str):
+                # It's ast.Str in 3.6.0
                 self.write(t.format_spec.s)
+            elif isinstance(t.format_spec, ast.JoinedStr):
+                # It's ast.JoinedStr in 3.6.1+
+                for value in t.format_spec.values:
+                    if isinstance(value, ast.Str):
+                        self.write(value.s)
+                    else:
+                        self.dispatch(value)
             else:
                 self.dispatch(t.format_spec)
         self.write("}")
