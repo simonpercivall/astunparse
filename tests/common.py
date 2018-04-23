@@ -293,6 +293,9 @@ class AstunparseCommonTestCase:
         self.check_roundtrip('f"{key}={value!s}"')
         self.check_roundtrip('f"{key}={value!r}"')
         self.check_roundtrip('f"{key}={value!a}"')
+
+    @unittest.skipIf(sys.version_info != (3, 6, 0), "Only supported on 3.6.0")
+    def test_joined_str_361(self):
         self.check_roundtrip('f"{key:4}={value!s}"')
         self.check_roundtrip('f"{key:02}={value!r}"')
         self.check_roundtrip('f"{key:6}={value!a}"')

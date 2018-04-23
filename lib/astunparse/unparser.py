@@ -39,6 +39,15 @@ class Unparser:
         print("", file=self.f)
         self.f.flush()
 
+    def is_python_3(self):
+        return six.PY3
+
+    def is_python_2(self):
+        return six.PY2
+
+    def python_version(self):
+        return sys.version_info
+
     def fill(self, text = ""):
         "Indent a piece of text, according to the current indentation level"
         self.f.write("\n"+"    "*self._indent + text)
@@ -207,7 +216,7 @@ class Unparser:
 
     def _Raise(self, t):
         self.fill("raise")
-        if six.PY3:
+        if self.is_python_3():
             if not t.exc:
                 assert not t.cause
                 return
@@ -281,7 +290,7 @@ class Unparser:
             self.dispatch(t.type)
         if t.name:
             self.write(" as ")
-            if six.PY3:
+            if self.is_python_3():
                 self.write(t.name)
             else:
                 self.dispatch(t.name)
@@ -295,7 +304,7 @@ class Unparser:
             self.fill("@")
             self.dispatch(deco)
         self.fill("class "+t.name)
-        if six.PY3:
+        if self.is_python_3():
             self.write("(")
             comma = False
             for e in t.bases:
@@ -427,7 +436,7 @@ class Unparser:
         self.write(repr(t.s))
 
     def _Str(self, tree):
-        if six.PY3:
+        if self.is_python_3():
             self.write(repr(tree.s))
         else:
             # if from __future__ import unicode_literals is in effect,
@@ -483,7 +492,7 @@ class Unparser:
 
     def _Num(self, t):
         repr_n = repr(t.n)
-        if six.PY3:
+        if self.is_python_3():
             self.write(repr_n.replace("inf", INFSTR))
         else:
             # Parenthesize negative numbers, to avoid turning (-1)**2 into -1**2.
@@ -586,7 +595,7 @@ class Unparser:
         self.write("(")
         self.write(self.unop[t.op.__class__.__name__])
         self.write(" ")
-        if six.PY2 and isinstance(t.op, ast.USub) and isinstance(t.operand, ast.Num):
+        if self.is_python_2() and isinstance(t.op, ast.USub) and isinstance(t.operand, ast.Num):
             # If we're applying unary minus to a number, parenthesize the number.
             # This is necessary: -2147483648 is different from -(2147483648) on
             # a 32-bit machine (the first is an int, the second a long), and
@@ -649,7 +658,7 @@ class Unparser:
             if comma: self.write(", ")
             else: comma = True
             self.dispatch(e)
-        if sys.version_info[:2] < (3, 5):
+        if self.python_version()[:2] < (3, 5):
             if t.starargs:
                 if comma: self.write(", ")
                 else: comma = True
