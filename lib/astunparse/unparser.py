@@ -442,48 +442,51 @@ class Unparser:
             else:
                 assert False, "shouldn't get here"
 
-    format_conversions = {97: 'a', 114: 'r', 115: 's'}
-
-    def _generic_FormattedValue(self, t):
-        self.write("{")
-        self.dispatch(t.value)
-        if t.conversion is not None and t.conversion != -1:
-            self.write("!")
-            self.write(self.format_conversions[t.conversion])
-            #raise NotImplementedError(ast.dump(t, True, True))
-        if t.format_spec is not None:
-            self.write(":")
-            if isinstance(t.format_spec, ast.Str):
-                # It's ast.Str in 3.6.0
-                self.write(t.format_spec.s)
-            elif isinstance(t.format_spec, ast.JoinedStr):
-                # It's ast.JoinedStr in 3.6.1+
-                for value in t.format_spec.values:
-                    if isinstance(value, ast.Str):
-                        self.write(value.s)
-                    else:
-                        self.dispatch(value)
-            else:
-                self.dispatch(t.format_spec)
-        self.write("}")
+    def _JoinedStr(self, t):
+        # JoinedStr(expr* values)
+        self.write("f")
+        string = StringIO()
+        self._fstring_JoinedStr(t, string.write)
+        self.write(repr(string.getvalue()))
 
     def _FormattedValue(self, t):
         # FormattedValue(expr value, int? conversion, expr? format_spec)
-        self.write("f'''")
-        self._generic_FormattedValue(t)
-        self.write("'''")
+        self.write("f")
+        string = StringIO()
+        self._fstring_JoinedStr(t, string.write)
+        self.write(repr(string.getvalue()))
 
-    def _JoinedStr(self, t):
-        # JoinedStr(expr* values)
-        self.write("f'''")
+    def _fstring_JoinedStr(self, t, write):
         for value in t.values:
-            if isinstance(value, ast.Str):
-                self.write(value.s)
-            elif isinstance(value, ast.FormattedValue):
-                self._generic_FormattedValue(value)
-            else:
-                self.dispatch(value)
-        self.write("'''")
+            meth = getattr(self, "_fstring_" + type(value).__name__)
+            meth(value, write)
+
+    def _fstring_Str(self, t, write):
+        value = t.s.replace("{", "{{").replace("}", "}}")
+        write(value)
+
+    def _fstring_Constant(self, t, write):
+        assert isinstance(t.value, str)
+        value = t.value.replace("{", "{{").replace("}", "}}")
+        write(value)
+
+    def _fstring_FormattedValue(self, t, write):
+        write("{")
+        expr = StringIO()
+        Unparser(t.value, expr)
+        expr = expr.getvalue().rstrip("\n")
+        if expr.startswith("{"):
+            write(" ")  # Separate pair of opening brackets as "{ {"
+        write(expr)
+        if t.conversion != -1:
+            conversion = chr(t.conversion)
+            assert conversion in "sra"
+            write("!{conversion}".format(conversion=conversion))
+        if t.format_spec:
+            write(":")
+            meth = getattr(self, "_fstring_" + type(t.format_spec).__name__)
+            meth(t.format_spec, write)
+        write("}")
 
     def _Name(self, t):
         self.write(t.id)
