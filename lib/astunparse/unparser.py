@@ -447,7 +447,20 @@ class Unparser:
         self.write("f")
         string = StringIO()
         self._fstring_JoinedStr(t, string.write)
-        self.write(repr(string.getvalue()))
+        # Deviation from `unparse.py`: Try to find an unused quote.
+        # This change is made to handle _very_ complex f-strings.
+        v = string.getvalue()
+        if '\n' in v or '\r' in v:
+            quote_types = ["'''", '"""']
+        else:
+            quote_types = ["'", '"', '"""', "'''"]
+        for quote_type in quote_types:
+            if quote_type not in v:
+                v = "{quote_type}{v}{quote_type}".format(quote_type=quote_type, v=v)
+                break
+        else:
+            v = repr(v)
+        self.write(v)
 
     def _FormattedValue(self, t):
         # FormattedValue(expr value, int? conversion, expr? format_spec)
