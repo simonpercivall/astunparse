@@ -3,6 +3,11 @@ Changelog
 
 Here's the recent changes to AST Unparser.
 
+1.6.1 - 2018-10-03
+~~~~~~~~~~~~~~~~~~
+
+* Fix the roundtripping of very complex f-strings.
+
 1.6.0 - 2018-09-30
 ~~~~~~~~~~~~~~~~~~
 
