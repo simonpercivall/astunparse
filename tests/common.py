@@ -139,6 +139,10 @@ a_repr = """\
 `{}`
 """
 
+complex_f_string = '''\
+f\'\'\'-{f"""*{f"+{f'.{x}.'}+"}*"""}-\'\'\'
+'''
+
 async_function_def = """\
 async def f():
     suite1
@@ -316,6 +320,10 @@ class AstunparseCommonTestCase:
     @unittest.skipUnless(six.PY2, "Only for Python 2")
     def test_repr(self):
         self.check_roundtrip(a_repr)
+
+    @unittest.skipUnless(sys.version_info[:2] >= (3, 6), "Only for Python 3.6 or greater")
+    def test_complex_f_string(self):
+        self.check_roundtrip(complex_f_string)
 
     @unittest.skipUnless(six.PY3, "Only for Python 3")
     def test_annotations(self):
