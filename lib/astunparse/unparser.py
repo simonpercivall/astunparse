@@ -512,6 +512,28 @@ class Unparser:
         self.dispatch(t.value)
         self.write("`")
 
+    def _write_constant(self, value):
+        if isinstance(value, (float, complex)):
+            # Substitute overflowing decimal literal for AST infinities.
+            self.write(repr(value).replace("inf", INFSTR))
+        else:
+            self.write(repr(value))
+
+    def _Constant(self, t):
+        value = t.value
+        if isinstance(value, tuple):
+            self.write("(")
+            if len(value) == 1:
+                self._write_constant(value[0])
+                self.write(",")
+            else:
+                interleave(lambda: self.write(", "), self._write_constant, value)
+            self.write(")")
+        elif value is Ellipsis: # instead of `...` for Py2 compatibility
+            self.write("...")
+        else:
+            self._write_constant(t.value)
+
     def _Num(self, t):
         repr_n = repr(t.n)
         if six.PY3:
