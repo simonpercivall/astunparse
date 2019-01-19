@@ -3,6 +3,12 @@ Changelog
 
 Here's the recent changes to AST Unparser.
 
+1.6.2 - 2019-01-19
+~~~~~~~~~~~~~~~~~~
+
+* Add support for the Constant node in Python 3.8
+* Add tests to the sdist
+
 1.6.1 - 2018-10-03
 ~~~~~~~~~~~~~~~~~~
 
