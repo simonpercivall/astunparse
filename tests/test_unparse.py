@@ -6,7 +6,8 @@ else:
     import unittest
 
 import astunparse
-from tests.common import AstunparseCommonTestCase
+from .common import AstunparseCommonTestCase
+
 
 class UnparseTestCase(AstunparseCommonTestCase, unittest.TestCase):
 

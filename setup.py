@@ -3,7 +3,7 @@
 import sys
 import os
 import re
-from setuptools import setup, find_packages
+from setuptools import setup
 
 readme = open('README.rst').read()
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
@@ -33,8 +33,9 @@ setup(
     maintainer='Simon Percivall',
     maintainer_email='percivall@gmail.com',
     url='https://github.com/simonpercivall/astunparse',
-    packages=find_packages('lib'),
-    package_dir={'': 'lib'},
+    packages=['astunparse', 'astunparse.tests'],
+    package_dir={'astunparse': 'lib/astunparse',
+                 'astunparse.tests': 'tests'},
     include_package_data=True,
     install_requires=read_reqs('requirements.txt'),
     license="BSD",

@@ -7,7 +7,8 @@ else:
     import unittest
 
 import astunparse
-from tests.common import AstunparseCommonTestCase
+from .common import AstunparseCommonTestCase
+
 
 class DumpTestCase(AstunparseCommonTestCase, unittest.TestCase):
 
