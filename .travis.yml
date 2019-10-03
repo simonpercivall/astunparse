@@ -1,6 +1,7 @@
 # Config file for automatic testing at travis-ci.org
-sudo: false
+sudo: required  # for 3.7, see https://github.com/travis-ci/travis-ci/issues/9069#issuecomment-425720905
 language: python
+dist: xenial
 
 python:
   - "2.6"
@@ -10,6 +11,8 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
+  - "3.7"
+  - "3.8-dev"
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: pip install -r requirements.txt
