@@ -1,7 +1,6 @@
 # Config file for automatic testing at travis-ci.org
 sudo: false
 language: python
-dist: xenial
 
 python:
   - "2.6"
