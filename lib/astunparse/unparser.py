@@ -862,14 +862,6 @@ class Unparser:
             self.write(" as ")
             self.dispatch(t.optional_vars)
 
-    def _Await(self, t):
-        self.write("(")
-        self.write("await")
-        if t.value:
-            self.write(" ")
-            self.dispatch(t.value)
-        self.write(")")
-
 def roundtrip(filename, output=sys.stdout):
     if six.PY3:
         with open(filename, "rb") as pyfile:
