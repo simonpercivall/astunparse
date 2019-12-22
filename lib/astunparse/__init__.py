@@ -5,7 +5,7 @@ from .unparser import Unparser
 from .printer import Printer
 
 
-__version__ = '1.6.2'
+__version__ = '1.6.3'
 
 
 def unparse(tree):
