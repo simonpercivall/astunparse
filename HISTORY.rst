@@ -3,6 +3,11 @@ Changelog
 
 Here's the recent changes to AST Unparser.
 
+1.6.3 - 2019-12-22
+~~~~~~~~~~~~~~~~~~
+
+* Add full support for Python 3.8
+
 1.6.2 - 2019-01-19
 ~~~~~~~~~~~~~~~~~~
 
