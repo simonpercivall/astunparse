@@ -24,14 +24,15 @@ def interleave(inter, f, seq):
             inter()
             f(x)
 
-class Unparser:
+class Unparser(object):
     """Methods in this class recursively traverse an AST and
     output source code for the abstract syntax; original formatting
     is disregarded. """
 
-    def __init__(self, tree, file = sys.stdout):
+    def __init__(self, tree, file = sys.stdout, version_info=None):
         """Unparser(tree, file=sys.stdout) -> None.
          Print the source for tree to file."""
+        self.version_info = version_info or sys.version_info
         self.f = file
         self.future_imports = []
         self._indent = 0
@@ -222,7 +223,7 @@ class Unparser:
 
     def _Raise(self, t):
         self.fill("raise")
-        if six.PY3:
+        if self.version_info[0] == 3:
             if not t.exc:
                 assert not t.cause
                 return
@@ -296,7 +297,7 @@ class Unparser:
             self.dispatch(t.type)
         if t.name:
             self.write(" as ")
-            if six.PY3:
+            if isinstance(t.name, six.string_types):
                 self.write(t.name)
             else:
                 self.dispatch(t.name)
@@ -310,7 +311,7 @@ class Unparser:
             self.fill("@")
             self.dispatch(deco)
         self.fill("class "+t.name)
-        if six.PY3:
+        if self.version_info[0] == 3:
             self.write("(")
             comma = False
             for e in t.bases:
@@ -321,7 +322,7 @@ class Unparser:
                 if comma: self.write(", ")
                 else: comma = True
                 self.dispatch(e)
-            if sys.version_info[:2] < (3, 5):
+            if self.version_info[:2] < (3, 5):
                 if t.starargs:
                     if comma: self.write(", ")
                     else: comma = True
@@ -443,7 +444,7 @@ class Unparser:
         self.write(repr(t.s))
 
     def _Str(self, tree):
-        if six.PY3:
+        if self.version_info[0] == 3:
             self.write(repr(tree.s))
         else:
             # if from __future__ import unicode_literals is in effect,
@@ -554,7 +555,7 @@ class Unparser:
 
     def _Num(self, t):
         repr_n = repr(t.n)
-        if six.PY3:
+        if self.version_info[0] == 3:
             self.write(repr_n.replace("inf", INFSTR))
         else:
             # Parenthesize negative numbers, to avoid turning (-1)**2 into -1**2.
@@ -663,7 +664,7 @@ class Unparser:
         self.write("(")
         self.write(self.unop[t.op.__class__.__name__])
         self.write(" ")
-        if six.PY2 and isinstance(t.op, ast.USub) and isinstance(t.operand, ast.Num):
+        if self.version_info[0] == 2 and isinstance(t.op, ast.USub) and isinstance(t.operand, ast.Num):
             # If we're applying unary minus to a number, parenthesize the number.
             # This is necessary: -2147483648 is different from -(2147483648) on
             # a 32-bit machine (the first is an int, the second a long), and
@@ -725,7 +726,7 @@ class Unparser:
             if comma: self.write(", ")
             else: comma = True
             self.dispatch(e)
-        if sys.version_info[:2] < (3, 5):
+        if self.version_info[:2] < (3, 5):
             if t.starargs:
                 if comma: self.write(", ")
                 else: comma = True
@@ -825,6 +826,11 @@ class Unparser:
             else: self.write(", ")
             if hasattr(t.kwarg, 'arg'):
                 self.write("**"+t.kwarg.arg)
+                if t.kwarg.annotation:
+                    self.write(": ")
+                    self.dispatch(t.kwarg.annotation)
+            elif hasattr(t.kwarg, 'id'):
+                self.write("**"+t.kwarg.id)
                 if t.kwarg.annotation:
                     self.write(": ")
                     self.dispatch(t.kwarg.annotation)
