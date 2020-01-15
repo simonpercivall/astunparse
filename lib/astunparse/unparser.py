@@ -29,7 +29,7 @@ class Unparser(object):
     output source code for the abstract syntax; original formatting
     is disregarded. """
 
-    def __init__(self, tree, file=sys.stdout, version_info=None):
+    def __init__(self, tree, file = sys.stdout, version_info=None):
         """Unparser(tree, file=sys.stdout) -> None.
          Print the source for tree to file."""
         self.version_info = version_info or sys.version_info
@@ -90,6 +90,13 @@ class Unparser(object):
         self.fill()
         self.dispatch(tree.value)
 
+    def _NamedExpr(self, tree):
+        self.write("(")
+        self.dispatch(tree.target)
+        self.write(" := ")
+        self.dispatch(tree.value)
+        self.write(")")
+
     def _Import(self, t):
         self.fill("import ")
         interleave(lambda: self.write(", "), self.dispatch, t.names)
@@ -121,11 +128,11 @@ class Unparser(object):
 
     def _AnnAssign(self, t):
         self.fill()
-        if not t.simple:
-            self.write("(")
+        if not t.simple and isinstance(t.target, ast.Name):
+            self.write('(')
         self.dispatch(t.target)
-        if not t.simple:
-            self.write(")")
+        if not t.simple and isinstance(t.target, ast.Name):
+            self.write(')')
         self.write(": ")
         self.dispatch(t.annotation)
         if t.value:
@@ -189,6 +196,14 @@ class Unparser(object):
     def _Nonlocal(self, t):
         self.fill("nonlocal ")
         interleave(lambda: self.write(", "), self.write, t.names)
+
+    def _Await(self, t):
+        self.write("(")
+        self.write("await")
+        if t.value:
+            self.write(" ")
+            self.dispatch(t.value)
+        self.write(")")
 
     def _Yield(self, t):
         self.write("(")
@@ -329,12 +344,19 @@ class Unparser(object):
         self.dispatch(t.body)
         self.leave()
 
-    def _generic_FunctionDef(self, t, async_=False):
+    def _FunctionDef(self, t):
+        self.__FunctionDef_helper(t, "def")
+
+    def _AsyncFunctionDef(self, t):
+        self.__FunctionDef_helper(t, "async def")
+
+    def __FunctionDef_helper(self, t, fill_suffix):
         self.write("\n")
         for deco in t.decorator_list:
             self.fill("@")
             self.dispatch(deco)
-        self.fill(("async " if async_ else "") + "def " + t.name + "(")
+        def_str = fill_suffix+" "+t.name + "("
+        self.fill(def_str)
         self.dispatch(t.args)
         self.write(")")
         if getattr(t, "returns", False):
@@ -344,14 +366,14 @@ class Unparser(object):
         self.dispatch(t.body)
         self.leave()
 
-    def _FunctionDef(self, t):
-        self._generic_FunctionDef(t)
+    def _For(self, t):
+        self.__For_helper("for ", t)
 
-    def _AsyncFunctionDef(self, t):
-        self._generic_FunctionDef(t, async_=True)
+    def _AsyncFor(self, t):
+        self.__For_helper("async for ", t)
 
-    def _generic_For(self, t, async_=False):
-        self.fill("async for " if async_ else "for ")
+    def __For_helper(self, fill, t):
+        self.fill(fill)
         self.dispatch(t.target)
         self.write(" in ")
         self.dispatch(t.iter)
@@ -363,12 +385,6 @@ class Unparser(object):
             self.enter()
             self.dispatch(t.orelse)
             self.leave()
-
-    def _For(self, t):
-        self._generic_For(t)
-
-    def _AsyncFor(self, t):
-        self._generic_For(t, async_=True)
 
     def _If(self, t):
         self.fill("if ")
@@ -448,7 +464,20 @@ class Unparser(object):
         self.write("f")
         string = StringIO()
         self._fstring_JoinedStr(t, string.write)
-        self.write(repr(string.getvalue()))
+        # Deviation from `unparse.py`: Try to find an unused quote.
+        # This change is made to handle _very_ complex f-strings.
+        v = string.getvalue()
+        if '\n' in v or '\r' in v:
+            quote_types = ["'''", '"""']
+        else:
+            quote_types = ["'", '"', '"""', "'''"]
+        for quote_type in quote_types:
+            if quote_type not in v:
+                v = "{quote_type}{v}{quote_type}".format(quote_type=quote_type, v=v)
+                break
+        else:
+            v = repr(v)
+        self.write(v)
 
     def _FormattedValue(self, t):
         # FormattedValue(expr value, int? conversion, expr? format_spec)
@@ -499,6 +528,30 @@ class Unparser(object):
         self.write("`")
         self.dispatch(t.value)
         self.write("`")
+
+    def _write_constant(self, value):
+        if isinstance(value, (float, complex)):
+            # Substitute overflowing decimal literal for AST infinities.
+            self.write(repr(value).replace("inf", INFSTR))
+        else:
+            self.write(repr(value))
+
+    def _Constant(self, t):
+        value = t.value
+        if isinstance(value, tuple):
+            self.write("(")
+            if len(value) == 1:
+                self._write_constant(value[0])
+                self.write(",")
+            else:
+                interleave(lambda: self.write(", "), self._write_constant, value)
+            self.write(")")
+        elif value is Ellipsis: # instead of `...` for Py2 compatibility
+            self.write("...")
+        else:
+            if t.kind == "u":
+                self.write("u")
+            self._write_constant(t.value)
 
     def _Num(self, t):
         repr_n = repr(t.n)
@@ -552,8 +605,9 @@ class Unparser(object):
 
     def _comprehension(self, t):
         if getattr(t, 'is_async', False):
-            self.write(" async")
-        self.write(" for ")
+            self.write(" async for ")
+        else:
+            self.write(" for ")
         self.dispatch(t.target)
         self.write(" in ")
         self.dispatch(t.iter)
@@ -578,26 +632,27 @@ class Unparser(object):
 
     def _Dict(self, t):
         self.write("{")
-        def write_pair(pair):
-            (k, v) = pair
+        def write_key_value_pair(k, v):
+            self.dispatch(k)
+            self.write(": ")
+            self.dispatch(v)
+
+        def write_item(item):
+            k, v = item
             if k is None:
-                self.write('**')
+                # for dictionary unpacking operator in dicts {**{'y': 2}}
+                # see PEP 448 for details
+                self.write("**")
                 self.dispatch(v)
             else:
-                self.dispatch(k)
-                self.write(": ")
-                self.dispatch(v)
-            self.write(",")
-        self._indent +=1
-        self.fill("")
-        interleave(lambda: self.fill(""), write_pair, zip(t.keys, t.values))
-        self._indent -=1
-        self.fill("}")
+                write_key_value_pair(k, v)
+        interleave(lambda: self.write(", "), write_item, zip(t.keys, t.values))
+        self.write("}")
 
     def _Tuple(self, t):
         self.write("(")
         if len(t.elts) == 1:
-            (elt,) = t.elts
+            elt = t.elts[0]
             self.dispatch(elt)
             self.write(",")
         else:
@@ -622,10 +677,9 @@ class Unparser(object):
             self.dispatch(t.operand)
         self.write(")")
 
-    binop = { "Add":"+", "Sub":"-", "Mult":"*", "Div":"/", "Mod":"%",
+    binop = { "Add":"+", "Sub":"-", "Mult":"*", "MatMult":"@", "Div":"/", "Mod":"%",
                     "LShift":"<<", "RShift":">>", "BitOr":"|", "BitXor":"^", "BitAnd":"&",
-                    "FloorDiv":"//", "Pow": "**",
-                    "MatMult":"@"}
+                    "FloorDiv":"//", "Pow": "**"}
     def _BinOp(self, t):
         self.write("(")
         self.dispatch(t.left)
@@ -655,7 +709,7 @@ class Unparser(object):
         # Special case: 3.__abs__() is a syntax error, so if t.value
         # is an integer literal then we need to either parenthesize
         # it or add an extra space to get 3 .__abs__().
-        if isinstance(t.value, ast.Num) and isinstance(t.value.n, int):
+        if isinstance(t.value, getattr(ast, 'Constant', getattr(ast, 'Num', None))) and isinstance(t.value.n, int):
             self.write(" ")
         self.write(".")
         self.write(t.attr)
@@ -726,18 +780,22 @@ class Unparser(object):
     def _arguments(self, t):
         first = True
         # normal arguments
-        defaults = [None] * (len(t.args) - len(t.defaults)) + t.defaults
-        for a,d in zip(t.args, defaults):
+        all_args = getattr(t, 'posonlyargs', []) + t.args
+        defaults = [None] * (len(all_args) - len(t.defaults)) + t.defaults
+        for index, elements in enumerate(zip(all_args, defaults), 1):
+            a, d = elements
             if first:first = False
             else: self.write(", ")
             self.dispatch(a)
             if d:
                 self.write("=")
                 self.dispatch(d)
+            if index == len(getattr(t, 'posonlyargs', ())):
+                self.write(", /")
 
         # varargs, or bare '*' if no varargs but keyword-only arguments present
         if t.vararg or getattr(t, "kwonlyargs", False):
-            if first: first = False
+            if first:first = False
             else: self.write(", ")
             self.write("*")
             if t.vararg:
@@ -809,14 +867,6 @@ class Unparser(object):
         if t.optional_vars:
             self.write(" as ")
             self.dispatch(t.optional_vars)
-
-    def _Await(self, t):
-        self.write("(")
-        self.write("await")
-        if t.value:
-            self.write(" ")
-            self.dispatch(t.value)
-        self.write(")")
 
 def roundtrip(filename, output=sys.stdout):
     if six.PY3:

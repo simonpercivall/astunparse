@@ -3,6 +3,22 @@ Changelog
 
 Here's the recent changes to AST Unparser.
 
+1.6.3 - 2019-12-22
+~~~~~~~~~~~~~~~~~~
+
+* Add full support for Python 3.8
+
+1.6.2 - 2019-01-19
+~~~~~~~~~~~~~~~~~~
+
+* Add support for the Constant node in Python 3.8
+* Add tests to the sdist
+
+1.6.1 - 2018-10-03
+~~~~~~~~~~~~~~~~~~
+
+* Fix the roundtripping of very complex f-strings.
+
 1.6.0 - 2018-09-30
 ~~~~~~~~~~~~~~~~~~
 

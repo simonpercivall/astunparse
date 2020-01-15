@@ -17,3 +17,4 @@ Authors
 * Amund Hov
 * Jakub Wilk
 * Mateusz Bysiek
+* Serge Sans Paille
