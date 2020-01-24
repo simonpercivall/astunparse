@@ -548,8 +548,8 @@ class Unparser:
         elif value is Ellipsis: # instead of `...` for Py2 compatibility
             self.write("...")
         else:
-            if t.kind == "u":
-                self.write("u")
+            if hasattr(t, "kind") and t.kind is not None:
+                self.write(t.kind)
             self._write_constant(t.value)
 
     def _Num(self, t):
