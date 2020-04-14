@@ -30,9 +30,9 @@ Basic example::
     astunparse.dump(ast.parse(inspect.getsource(ast)))
 
 
-This library is single-source compatible with Python 2.6 through Python 3.5. It
+This library is single-source compatible with Python 2.6 through Python 3.8. It
 is authored by the Python core developers; I have simply merged the Python 2.7
-and the Python 3.5 source and test suites, and added a wrapper. This factoring
+and the Python 3.8 source and test suites, and added a wrapper. This factoring
 out is to provide a library implementation that supports both versions.
 
 Added to this is a pretty-printing ``dump`` utility function.
