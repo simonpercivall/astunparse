@@ -424,3 +424,23 @@ class AstunparseCommonTestCase:
     @unittest.skipIf(sys.version_info < (3, 5), "Not supported < 3.5")
     def test_async_with_as(self):
         self.check_roundtrip(async_with_as)
+
+    @unittest.skipIf(sys.version_info < (3, 8), "Not supported < 3.8")
+    def test_assignment_expression(self):
+        self.check_roundtrip("(a := 1)")
+        self.check_roundtrip("if a := 1: a")
+
+    @unittest.skipIf(sys.version_info < (3, 8), "Not supported < 3.8")
+    def test_function_positional_only_arguments(self):
+        # Positional-only arguments
+        self.check_roundtrip("def f(a, /,): pass")
+        self.check_roundtrip("def f(a, /, c, d, e): pass")
+        self.check_roundtrip("def f(a, /, c, *, d, e): pass")
+        self.check_roundtrip("def f(a, /, c, *, d, e, **kwargs): pass")
+        # Positional-only arguments with default)
+        self.check_roundtrip("def f(a=1, /,): pass")
+        self.check_roundtrip("def f(a=1, /, b=2, c=4): pass")
+        self.check_roundtrip("def f(a=1, /, b=2, *, c=4): pass")
+        self.check_roundtrip("def f(a=1, /, b=2, *, c): pass")
+        self.check_roundtrip("def f(a=1, /, b=2, *, c=4, **kwargs): pass")
+        self.check_roundtrip("def f(a=1, /, b=2, *, c, **kwargs): pass")
