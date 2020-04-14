@@ -1,6 +1,14 @@
 import codecs
 import os
 import sys
+import ast
+
+if sys.version_info >= (3, 3):
+    from typed_ast import ast3, ast27
+else:
+    ast3 = None
+    ast27 = None
+
 if sys.version_info < (2, 7):
     import unittest2 as unittest
 else:
@@ -166,7 +174,7 @@ async def f():
         suite1
 """
 
-class AstunparseCommonTestCase:
+class AstunparseCommonTestCase(object):
     # Tests for specific bugs found in earlier versions of unparse
 
     def assertASTEqual(self, dump1, dump2):
@@ -174,6 +182,9 @@ class AstunparseCommonTestCase:
 
     def check_roundtrip(self, code1, filename="internal", mode="exec"):
         raise NotImplementedError()
+
+    def compile(self, code, filename, mode):
+        return self.ast.parse(code, filename, mode)
 
     test_directories = [
         os.path.join(getattr(sys, 'real_prefix', sys.prefix),
@@ -424,3 +435,22 @@ class AstunparseCommonTestCase:
     @unittest.skipIf(sys.version_info < (3, 5), "Not supported < 3.5")
     def test_async_with_as(self):
         self.check_roundtrip(async_with_as)
+
+
+class ASTTestCase(AstunparseCommonTestCase):
+    ast = ast
+
+
+if ast3:
+    class AST3TestCase(AstunparseCommonTestCase):
+        ast = ast3
+else:
+    AST3TestCase = None
+
+
+if ast27:
+    class AST2TestCase(AstunparseCommonTestCase):
+        ast = ast27
+
+else:
+    AST2TestCase = None
