@@ -195,6 +195,16 @@ class AstunparseCommonTestCase:
         for mode in ['exec', 'single', 'eval']:
             self.check_roundtrip(code_parseable_in_all_parser_modes, mode=mode)
 
+    @unittest.skipUnless(sys.version_info >= (3, 6), "Only for Python 3.6 or greater")
+    def test_fstrings(self):
+        self.check_roundtrip(r"""f'{f"{0}"*3}'""")
+        self.check_roundtrip(r"""f'{f"{y}"*3}'""")
+
+    def test_strings(self):
+        self.check_roundtrip("u'foo'")
+        self.check_roundtrip("r'foo'")
+        self.check_roundtrip("b'foo'")
+
     def test_del_statement(self):
         self.check_roundtrip("del x, y, z")
 
@@ -408,6 +418,11 @@ class AstunparseCommonTestCase:
     @unittest.skipIf(sys.version_info < (2, 7), "Not supported < 2.7")
     def test_with_two_items(self):
         self.check_roundtrip(with_two_items)
+
+    @unittest.skipUnless(sys.version_info >= (3, 5), "Only for Python 3.5 or greater")
+    def test_dict_unpacking_in_dict(self):
+        self.check_roundtrip(r"""{**{'y': 2}, 'x': 1}""")
+        self.check_roundtrip(r"""{**{'y': 2}, **{'x': 1}}""")
 
     @unittest.skipIf(sys.version_info < (3, 5), "Not supported < 3.5")
     def test_async_function_def(self):
