@@ -215,7 +215,6 @@ class AstunparseCommonTestCase:
         self.check_roundtrip("not True or False")
         self.check_roundtrip("True or not False")
 
-    @unittest.skipUnless(sys.version_info < (3, 6), "Only works for Python < 3.6")
     def test_integer_parens(self):
         self.check_roundtrip("3 .__abs__()")
 

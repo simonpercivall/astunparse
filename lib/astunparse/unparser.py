@@ -708,7 +708,10 @@ class Unparser:
         # Special case: 3.__abs__() is a syntax error, so if t.value
         # is an integer literal then we need to either parenthesize
         # it or add an extra space to get 3 .__abs__().
-        if isinstance(t.value, getattr(ast, 'Constant', getattr(ast, 'Num', None))) and isinstance(t.value.n, int):
+        ast_Num = getattr(ast, 'Num', None)
+        ast_Constant = getattr(ast, 'Constant', None)
+        if ((ast_Num and isinstance(t.value, ast_Num) and isinstance(t.value.n, int))
+           or (ast_Constant and isinstance(t.value, ast_Constant) and isinstance(t.value.value, int))):
             self.write(" ")
         self.write(".")
         self.write(t.attr)
