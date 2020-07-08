@@ -4,6 +4,9 @@ import ast
 import six
 
 
+_NOPE = object()
+
+
 class Printer(ast.NodeVisitor):
 
     def __init__(self, file=sys.stdout, indent="  "):
@@ -19,6 +22,7 @@ class Printer(ast.NodeVisitor):
         self.f.write(six.text_type(text))
 
     def generic_visit(self, node):
+        cls = type(node)
 
         if isinstance(node, list):
             nodestart = "["
@@ -27,7 +31,8 @@ class Printer(ast.NodeVisitor):
         else:
             nodestart = type(node).__name__ + "("
             nodeend = ")"
-            children = [(name + "=", value) for name, value in ast.iter_fields(node)]
+            children = [(name + "=", value) for name, value in ast.iter_fields(node)
+                        if not (value is None and getattr(cls, name, _NOPE) is None)]
 
         if len(children) > 1:
             self.indentation += 1
