@@ -482,7 +482,7 @@ class Unparser:
         # FormattedValue(expr value, int? conversion, expr? format_spec)
         self.write("f")
         string = StringIO()
-        self._fstring_JoinedStr(t, string.write)
+        self._fstring_FormattedValue(t, string.write)
         self.write(repr(string.getvalue()))
 
     def _fstring_JoinedStr(self, t, write):
