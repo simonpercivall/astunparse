@@ -37,7 +37,7 @@ setup(
     package_dir={'': 'lib'},
     include_package_data=True,
     install_requires=read_reqs('requirements.txt'),
-    license="PSF-2.0",
+    license="(BSD-3-Clause OR PSF-2.0)",
     zip_safe=False,
     keywords='astunparse',
     classifiers=[
