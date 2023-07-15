@@ -403,7 +403,8 @@ class Unparser:
         self.leave()
         # collapse nested ifs into equivalent elifs.
         while (t.orelse and len(t.orelse) == 1 and
-               isinstance(t.orelse[0], ast.If)):
+               (isinstance(t.orelse[0], ast.If) or
+                getattr(t.orelse[0], '_class', '') == 'If')):
             t = t.orelse[0]
             self.fill("elif ")
             self.dispatch(t.test)
