@@ -493,13 +493,17 @@ class Unparser:
         # FormattedValue(expr value, int? conversion, expr? format_spec)
         self.write("f")
         string = StringIO()
-        self._fstring_JoinedStr(t, string.write)
+        self._fstring_JoinedStr1(t, string.write)
         self.write(repr(string.getvalue()))
+
+    def _fstring_JoinedStr1(self, value, write):
+        cname = getattr(value, '_class', type(value).__name__)
+        meth = getattr(self, "_fstring_" + cname)
+        meth(value, write)
 
     def _fstring_JoinedStr(self, t, write):
         for value in t.values:
-            meth = getattr(self, "_fstring_" + type(value).__name__)
-            meth(value, write)
+            self._fstring_JoinedStr1(value, write)
 
     def _fstring_Str(self, t, write):
         value = t.s.replace("{", "{{").replace("}", "}}")
@@ -524,7 +528,8 @@ class Unparser:
             write("!{conversion}".format(conversion=conversion))
         if t.format_spec:
             write(":")
-            meth = getattr(self, "_fstring_" + type(t.format_spec).__name__)
+            cname = getattr(t.format_spec, '_class', type(t.format_spec).__name__)
+            meth = getattr(self, "_fstring_" + cname)
             meth(t.format_spec, write)
         write("}")
 
