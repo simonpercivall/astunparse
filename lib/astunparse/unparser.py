@@ -68,8 +68,12 @@ class Unparser:
             for t in tree:
                 self.dispatch(t)
             return
-        meth = getattr(self, "_"+tree.__class__.__name__)
-        meth(tree, **(kw if meth.__name__ in ["_Tuple"] else {}))
+        cname = getattr(tree, '_class', tree.__class__.__name__)
+        meth = getattr(self, "_"+cname, None)
+        if meth:
+            meth(tree, **(kw if meth.__name__ in ["_Tuple"] else {}))
+        else:
+            self.write('"<' + cname + '>"')
 
 
     ############### Unparsing methods ######################
