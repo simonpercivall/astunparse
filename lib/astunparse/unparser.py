@@ -285,7 +285,7 @@ class Unparser:
             self.leave()
 
     def _TryFinally(self, t):
-        if len(t.body) == 1 and isinstance(t.body[0], ast.TryExcept):
+        if len(t.body) == 1 and (isinstance(t.body[0], ast.TryExcept) or getattr(t.body[0], "_class", "") == "TryExcept"):
             # try-except-finally
             self.dispatch(t.body)
         else:
@@ -679,7 +679,8 @@ class Unparser:
         self.write("(")
         self.write(self.getop(t.op))
         self.write(" ")
-        if six.PY2 and isinstance(t.op, ast.USub) and isinstance(t.operand, ast.Num):
+        if (six.PY2 and (isinstance(t.op, ast.USub) or t.op == '-')
+            and (isinstance(t.operand, ast.Num) or getattr(t.operand, '_class', '') == 'Num')):
             # If we're applying unary minus to a number, parenthesize the number.
             # This is necessary: -2147483648 is different from -(2147483648) on
             # a 32-bit machine (the first is an int, the second a long), and
@@ -724,7 +725,7 @@ class Unparser:
     def getop(self, op):
         opcode = ''
         cname = op.__class__.__name__
-        if cname == "str":
+        if cname == "str" or cname == "unicode":
             opcode = op
         else:
             opcode = self.allops[cname]
@@ -735,7 +736,9 @@ class Unparser:
         # Special case: 3.__abs__() is a syntax error, so if t.value
         # is an integer literal then we need to either parenthesize
         # it or add an extra space to get 3 .__abs__().
-        if isinstance(t.value, getattr(ast, 'Constant', getattr(ast, 'Num', None))) and isinstance(t.value.n, int):
+        if ((isinstance(t.value, getattr(ast, 'Constant', getattr(ast, 'Num', None)))
+             or getattr(t.value, '_class', '') in ['Constant', 'Num'])
+            and isinstance(getattr(t.value, 'n', t.value), int)):
             self.write(" ")
         self.write(".")
         self.write(t.attr)
