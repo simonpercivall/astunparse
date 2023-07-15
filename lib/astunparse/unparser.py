@@ -11,6 +11,12 @@ from six import StringIO
 # We unparse those infinities to INFSTR.
 INFSTR = "1e" + repr(sys.float_info.max_10_exp + 1)
 
+def merge_dicts(x, *args):
+    z = x.copy()
+    for d in args:
+        z.update(d)
+    return z
+
 def interleave(inter, f, seq):
     """Call f on each item in seq, calling inter() in between.
     """
@@ -122,7 +128,7 @@ class Unparser:
     def _AugAssign(self, t):
         self.fill()
         self.dispatch(t.target)
-        self.write(" "+self.binop[t.op.__class__.__name__]+"= ")
+        self.write(" "+self.getop(t.op)+"= ")
         self.dispatch(t.value)
 
     def _AnnAssign(self, t):
@@ -661,7 +667,7 @@ class Unparser:
     unop = {"Invert":"~", "Not": "not", "UAdd":"+", "USub":"-"}
     def _UnaryOp(self, t):
         self.write("(")
-        self.write(self.unop[t.op.__class__.__name__])
+        self.write(self.getop(t.op))
         self.write(" ")
         if six.PY2 and isinstance(t.op, ast.USub) and isinstance(t.operand, ast.Num):
             # If we're applying unary minus to a number, parenthesize the number.
@@ -682,7 +688,7 @@ class Unparser:
     def _BinOp(self, t):
         self.write("(")
         self.dispatch(t.left)
-        self.write(" " + self.binop[t.op.__class__.__name__] + " ")
+        self.write(" " + self.getop(t.op) + " ")
         self.dispatch(t.right)
         self.write(")")
 
@@ -692,16 +698,27 @@ class Unparser:
         self.write("(")
         self.dispatch(t.left)
         for o, e in zip(t.ops, t.comparators):
-            self.write(" " + self.cmpops[o.__class__.__name__] + " ")
+            self.write(" " + self.getop(o) + " ")
             self.dispatch(e)
         self.write(")")
 
-    boolops = {ast.And: 'and', ast.Or: 'or'}
+    boolops = {'ast.And': 'and', 'ast.Or': 'or', 'And': 'and', 'Or': 'or'}
     def _BoolOp(self, t):
         self.write("(")
-        s = " %s " % self.boolops[t.op.__class__]
+        s = " %s " % self.getop(t.op)
         interleave(lambda: self.write(s), self.dispatch, t.values)
         self.write(")")
+
+    allops = merge_dicts(binop, unop, cmpops, boolops)
+    @classmethod
+    def getop(self, op):
+        opcode = ''
+        cname = op.__class__.__name__
+        if cname == "str":
+            opcode = op
+        else:
+            opcode = self.allops[cname]
+        return opcode
 
     def _Attribute(self,t):
         self.dispatch(t.value)
