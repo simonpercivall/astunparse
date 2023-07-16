@@ -293,6 +293,18 @@ class AstunparseCommonTestCase:
     def test_bytes(self):
         self.check_roundtrip("b'123'")
 
+    def test_index(self):
+        self.check_roundtrip("r[0]")
+        self.check_roundtrip("r[0:5]")
+        self.check_roundtrip("r[0:5:2]")
+        self.check_roundtrip("r[1::2]")
+
+    def test_index2(self):
+        self.check_roundtrip("r[0,i]")
+        self.check_roundtrip("r[:,0:5]")
+        self.check_roundtrip("r[i:1:-1, 2]")
+        self.check_roundtrip("r[i:1:-1, :]")
+
     @unittest.skipIf(sys.version_info < (3, 6), "Not supported < 3.6")
     def test_formatted_value(self):
         self.check_roundtrip('f"{value}"')
