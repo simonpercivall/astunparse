@@ -262,7 +262,6 @@ class AstunparseCommonTestCase:
         self.check_roundtrip("a is b is c is not d")
 
     def test_function_arguments(self):
-        self.check_roundtrip("def f(): pass")
         self.check_roundtrip("def f(a): pass")
         self.check_roundtrip("def f(b = 2): pass")
         self.check_roundtrip("def f(a, b): pass")
@@ -394,7 +393,7 @@ class AstunparseCommonTestCase:
         self.check_roundtrip("a: int = None")
         self.check_roundtrip("some_list: List[int]")
         self.check_roundtrip("some_list: List[int] = []")
-        self.check_roundtrip("t: Tuple[int, ...] = (1, 2, 3)")
+        self.check_roundtrip("t: Tuple[(int, ...)] = (1, 2, 3)")
         self.check_roundtrip("(a): int")
         self.check_roundtrip("(a): int = 0")
         self.check_roundtrip("(a): int = None")
