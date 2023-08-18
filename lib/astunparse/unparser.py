@@ -56,14 +56,17 @@ class Unparser:
         "Decrease the indentation level."
         self._indent -= 1
 
-    def dispatch(self, tree):
+    def dispatch(self, tree, parent_t=None):
         "Dispatcher function, dispatching tree type T to method _T."
         if isinstance(tree, list):
             for t in tree:
                 self.dispatch(t)
             return
         meth = getattr(self, "_"+tree.__class__.__name__)
-        meth(tree)
+        if parent_t:
+            meth(tree, parent_t=parent_t)
+        else: 
+            meth(tree)
 
 
     ############### Unparsing methods ######################
@@ -659,8 +662,12 @@ class Unparser:
         self.write(")")
 
     unop = {"Invert":"~", "Not": "not", "UAdd":"+", "USub":"-"}
-    def _UnaryOp(self, t):
-        self.write("(")
+    def _UnaryOp(self, t, parent_t):
+        if isinstance(parent_t, ast.Call):
+            pass
+        else:
+            self.write("(")
+
         self.write(self.unop[t.op.__class__.__name__])
         self.write(" ")
         if six.PY2 and isinstance(t.op, ast.USub) and isinstance(t.operand, ast.Num):
@@ -674,34 +681,57 @@ class Unparser:
             self.write(")")
         else:
             self.dispatch(t.operand)
-        self.write(")")
+
+        if isinstance(parent_t, ast.Call):
+            pass
+        else:
+            self.write("(")
 
     binop = { "Add":"+", "Sub":"-", "Mult":"*", "MatMult":"@", "Div":"/", "Mod":"%",
                     "LShift":"<<", "RShift":">>", "BitOr":"|", "BitXor":"^", "BitAnd":"&",
                     "FloorDiv":"//", "Pow": "**"}
-    def _BinOp(self, t):
-        self.write("(")
+    def _BinOp(self, t, parent_t=None):
+        if isinstance(parent_t, ast.Call):
+            pass
+        else:
+            self.write("(")
         self.dispatch(t.left)
         self.write(" " + self.binop[t.op.__class__.__name__] + " ")
         self.dispatch(t.right)
-        self.write(")")
+        if isinstance(parent_t, ast.Call):
+            pass
+        else:
+            self.write("(")
 
     cmpops = {"Eq":"==", "NotEq":"!=", "Lt":"<", "LtE":"<=", "Gt":">", "GtE":">=",
                         "Is":"is", "IsNot":"is not", "In":"in", "NotIn":"not in"}
-    def _Compare(self, t):
-        self.write("(")
+    def _Compare(self, t, parent_t=None):
+        if isinstance(parent_t, ast.Call):
+            pass
+        else:
+            self.write("(")
         self.dispatch(t.left)
         for o, e in zip(t.ops, t.comparators):
             self.write(" " + self.cmpops[o.__class__.__name__] + " ")
             self.dispatch(e)
-        self.write(")")
+        if isinstance(parent_t, ast.Call):
+            pass
+        else:
+            self.write("(")
 
     boolops = {ast.And: 'and', ast.Or: 'or'}
-    def _BoolOp(self, t):
-        self.write("(")
+    def _BoolOp(self, t, parent_t=None):
+        if isinstance(parent_t, ast.Call):
+            pass
+        else:
+            self.write("(")
+        
         s = " %s " % self.boolops[t.op.__class__]
         interleave(lambda: self.write(s), self.dispatch, t.values)
-        self.write(")")
+        if isinstance(parent_t, ast.Call):
+            pass
+        else:
+            self.write("(")
 
     def _Attribute(self,t):
         self.dispatch(t.value)
@@ -720,22 +750,22 @@ class Unparser:
         for e in t.args:
             if comma: self.write(", ")
             else: comma = True
-            self.dispatch(e)
+            self.dispatch(e, parent_t=t)
         for e in t.keywords:
             if comma: self.write(", ")
             else: comma = True
-            self.dispatch(e)
+            self.dispatch(e, parent_t=t)
         if sys.version_info[:2] < (3, 5):
             if t.starargs:
                 if comma: self.write(", ")
                 else: comma = True
                 self.write("*")
-                self.dispatch(t.starargs)
+                self.dispatch(t.starargs, parent_t=t)
             if t.kwargs:
                 if comma: self.write(", ")
                 else: comma = True
                 self.write("**")
-                self.dispatch(t.kwargs)
+                self.dispatch(t.kwargs, parent_t=t)
         self.write(")")
 
     def _Subscript(self, t):
